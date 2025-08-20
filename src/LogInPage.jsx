@@ -19,7 +19,7 @@ const LogInPage = () => {
         email: Yup.string()
             .matches(
                 /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                "Invalid Email",
+                "Invalid Email"
             )
             .required("Email is required"),
         password: Yup.string().required("Password is required"),
@@ -58,7 +58,7 @@ const LogInPage = () => {
                 toast.success("Login Successful!");
                 if (response.data.token) {
                     localStorage.setItem("token", response.data.token);
-                    localStorage.setItem("role", response.data.role); 
+                    localStorage.setItem("role", response.data.role);
                 }
                 setTimeout(() => navigate("/Sidebar"), 1000);
             } else {
@@ -70,16 +70,13 @@ const LogInPage = () => {
         }
     };
 
-
-
     return (
         <>
             <ToastContainer />
             <div className="bg-white-A700 flex flex-col font-inter items-center justify-center w-[100%] h-[100vh]">
-                <div className="flex md:flex-col flex-row md:gap-10 gap-[86px] items-center justify-center md:px-5 w-[100%] md:w-full">
+                <div className="bg-white shadow-lg border border-gray-200 rounded-2xl p-8 w-auto">
                     <div className="flex flex-col gap-2.5 justify-start md:mt-0 items-start w-[38%] md:w-full">
                         <div className="flex flex-row gap-[9px] items-center justify-start ml-5 md:ml-[0] md:pr-10 sm:pr-5 pr-[83px] w-[54%] md:w-full">
-                  
                             <Text
                                 className="md:text-4xl sm:text-[34px] text-[34px] text-blue-A700 tracking-[0.20px]"
                                 size="txtInterSemiBold38"
@@ -142,8 +139,7 @@ const LogInPage = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            {formik.touched.password &&
-                                                formik.errors.password ? (
+                                            {formik.touched.password && formik.errors.password ? (
                                                 <div className="text-red-500">
                                                     {formik.errors.password}
                                                 </div>

@@ -8,11 +8,11 @@ const steps = ["Basic Info", "Contact Info", "Skills & Photo"];
 
 function UserAdd() {
   const [activeStep, setActiveStep] = useState(0);
-   const [countries, setCountries] = useState([]);
+  const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  
+  const [preview, setPreview] = useState(null);
 
   const validationSchemas = [
     Yup.object({
@@ -26,7 +26,9 @@ function UserAdd() {
         .required("Confirm your password"),
     }),
     Yup.object({
-      phoneNumber: Yup.string().required("Phone Number is required"),
+      phoneNumber: Yup.string()
+        .required("Phone Number is required")
+        .matches(/^[0-9]{10}$/, "Phone Number must be exactly 10 digits"),
       gender: Yup.string().required("Gender is required"),
       countryId: Yup.string().required("Country ID required"),
       stateId: Yup.string().required("State ID required"),
@@ -58,8 +60,8 @@ function UserAdd() {
     validateOnBlur: true,
     validateOnChange: false,
   });
-  const AddNewUser = async (values) =>{
-     try {
+  const AddNewUser = async (values) => {
+    try {
       const formData = new FormData();
       Object.keys(values).forEach((key) => {
         formData.append(key, values[key]);
@@ -74,7 +76,7 @@ function UserAdd() {
       );
 
       toast.success("User registered successfully!");
-      
+
       console.log("API response:", response.data);
     } catch (error) {
       console.error("Error:", error);
@@ -102,7 +104,7 @@ function UserAdd() {
   const handleBack = () => {
     if (activeStep > 0) setActiveStep(activeStep - 1);
   };
- useEffect(() => {
+  useEffect(() => {
     const fetchCountries = async () => {
       try {
         const response = await axios.get(
@@ -118,28 +120,28 @@ function UserAdd() {
     };
     fetchCountries();
   }, [token]);
-useEffect(() => {
-  if (!formik.values.countryId) return;
+  useEffect(() => {
+    if (!formik.values.countryId) return;
 
-  const fetchStates = async () => {
-    try {
-      const response = await axios.get(
-        "https://reactinterviewtask.codetentaclestechnologies.in/api/api/state-list",
-        {
-          params: { country_id: formik.values.countryId }, // send as query param
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          "https://reactinterviewtask.codetentaclestechnologies.in/api/api/state-list",
+          {
+            params: { country_id: formik.values.countryId }, // send as query param
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-      console.log("States:", response.data.data);
-      setStates(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching states:", error);
-    }
-  };
+        console.log("States:", response.data.data);
+        setStates(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+      }
+    };
 
-  fetchStates();
-}, [formik.values.countryId, token]);
+    fetchStates();
+  }, [formik.values.countryId, token]);
 
   return (
     <div className="w-full mx-auto p-6 bg-gray-100 border rounded-lg shadow-md">
@@ -158,11 +160,10 @@ useEffect(() => {
         {steps.map((label, index) => (
           <div
             key={label}
-            className={`flex-1 text-center text-sm font-medium ${
-              index === activeStep
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-400 border-b"
-            }`}>
+            className={`flex-1 text-center text-sm font-medium ${index === activeStep
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-400 border-b"
+              }`}>
             {label}
           </div>
         ))}
@@ -170,7 +171,7 @@ useEffect(() => {
 
       {/* Form */}
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-      <ToastContainer />
+        <ToastContainer />
         {activeStep === 0 && (
           <>
             <input
@@ -310,14 +311,30 @@ useEffect(() => {
               type="file"
               name="photo"
               accept="image/*"
-              onChange={(e) =>
-                formik.setFieldValue("photo", e.currentTarget.files[0])
-              }
+              onChange={(e) => {
+                const file = e.currentTarget.files[0];
+                formik.setFieldValue("photo", file);
+                if (file) {
+                  setPreview(URL.createObjectURL(file));
+                }
+              }}
               className="w-full border p-2 rounded text-sm"
             />
             {formik.touched.photo && formik.errors.photo && (
               <p className="text-red-500 text-xs">{formik.errors.photo}</p>
             )}
+
+            {/* Circle Preview */}
+            {preview && (
+              <div className="mt-3 flex justify-center">
+                <img
+                  src={preview}
+                  alt="Selected"
+                  className="w-24 h-24 rounded-full object-cover border"
+                />
+              </div>
+            )}
+
           </>
         )}
 
