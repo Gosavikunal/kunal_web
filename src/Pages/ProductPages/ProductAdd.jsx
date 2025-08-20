@@ -1,5 +1,6 @@
-import React from "react";
+
 import { useFormik } from "formik";
+import React, { useState } from "react";
 import * as Yup from "yup";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -9,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 function ProductAdd() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
+  const [preview, setPreview] = useState(null);
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -111,11 +112,29 @@ function ProductAdd() {
           type="file"
           name="image"
           accept="image/*"
-          onChange={(e) => formik.setFieldValue("image", e.currentTarget.files[0])}
+          onChange={(e) => {
+            const file = e.currentTarget.files[0];
+            formik.setFieldValue("image", file);
+            if (file) {
+              setPreview(URL.createObjectURL(file));
+            }
+          }}
           className="w-full border p-2 rounded text-sm"
         />
+
         {formik.touched.image && formik.errors.image && (
           <p className="text-red-500 text-xs">{formik.errors.image}</p>
+        )}
+
+
+        {preview && (
+          <div className="mt-3 flex justify-center">
+            <img
+              src={preview}
+              alt="Selected"
+              className="w-24 h-24 rounded-full object-cover border"
+            />
+          </div>
         )}
 
         <div className="flex justify-end">
