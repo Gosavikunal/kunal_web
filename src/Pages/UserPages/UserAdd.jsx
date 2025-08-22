@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import api from "../../api";
 const steps = ["Basic Info", "Contact Info", "Skills & Photo"];
 
 function UserAdd() {
@@ -11,7 +12,6 @@ function UserAdd() {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const [preview, setPreview] = useState(null);
 
   const validationSchemas = [
@@ -63,24 +63,17 @@ function UserAdd() {
   const AddNewUser = async (values) => {
     try {
       const formData = new FormData();
-      Object.keys(values).forEach((key) => {
-        formData.append(key, values[key]);
-      });
+      Object.keys(values).forEach((key) => formData.append(key, values[key]));
 
-      const response = await axios.post(
-        "https://reactinterviewtask.codetentaclestechnologies.in/api/api/register",
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.post("/register", formData);
 
-      toast.success("User registered successfully!");
-
-      console.log("API response:", response.data);
+      if (response.data.success) {
+        toast.success(response.data.message || "User registered successfully!");
+      } else {
+        toast.error(response.data.message || "Registration failed");
+      }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
   const handleNext = async () => {
@@ -107,31 +100,22 @@ function UserAdd() {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await axios.get(
-          "https://reactinterviewtask.codetentaclestechnologies.in/api/api/country-list",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await api.get("/country-list");
         setCountries(response.data.data || []);
       } catch (error) {
         console.error("Error fetching countries:", error);
       }
     };
     fetchCountries();
-  }, [token]);
+  }, []);
   useEffect(() => {
     if (!formik.values.countryId) return;
 
     const fetchStates = async () => {
       try {
-        const response = await axios.get(
-          "https://reactinterviewtask.codetentaclestechnologies.in/api/api/state-list",
-          {
-            params: { country_id: formik.values.countryId }, // send as query param
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await api.get("/state-list", {
+          params: { country_id: formik.values.countryId },
+        });
 
         console.log("States:", response.data.data);
         setStates(response.data.data || []);
@@ -141,7 +125,7 @@ function UserAdd() {
     };
 
     fetchStates();
-  }, [formik.values.countryId, token]);
+  }, [formik.values.countryId]);
 
   return (
     <div className="w-full mx-auto p-6 bg-gray-100 border rounded-lg shadow-md">

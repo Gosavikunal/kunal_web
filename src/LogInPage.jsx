@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-
+import api from "./api";
 const LogInPage = () => {
     let navigate = useNavigate();
     const [showPass, setShowPass] = useState(false);
@@ -43,29 +43,20 @@ const LogInPage = () => {
 
     const onHandleSubmit = async (values) => {
         try {
-            const response = await axios.post(
-                "https://reactinterviewtask.codetentaclestechnologies.in/api/api/login",
-                {
-                    email: values.email,
-                    password: values.password,
-                },
-                headers
-            );
+            const response = await api.post("/login", {
+                email: values.email,
+                password: values.password,
+            });
 
-            console.log(response.data);
-
-            if (response.data?.success === true) {
+            if (response.data?.success) {
+                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("role", response.data.role);
                 toast.success("Login Successful!");
-                if (response.data.token) {
-                    localStorage.setItem("token", response.data.token);
-                    localStorage.setItem("role", response.data.role);
-                }
                 setTimeout(() => navigate("/Sidebar"), 1000);
             } else {
                 toast.error(response.data?.message || "Invalid credentials");
             }
         } catch (error) {
-            console.error("Login error:", error);
             toast.error(error.response?.data?.message || "Something went wrong!");
         }
     };

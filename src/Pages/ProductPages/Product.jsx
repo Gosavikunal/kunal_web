@@ -4,11 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AccessRightCard from "../AccessRight/AccessRightCard";
-
+import api from "../../api";
 const Product = () => {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -25,13 +24,7 @@ const Product = () => {
   const getProducts = async (page = 1) => {
     try {
       setLoading(true); // start loading
-      const res = await axios.get(
-        `https://reactinterviewtask.codetentaclestechnologies.in/api/api/product-list?page=${page}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      const res = await api.get(`/product-list?page=${page}`);
       const apiResponse = res.data;
       console.log("Product API Response:", apiResponse);
 
