@@ -6,10 +6,9 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-
+import api from "../../api";
 function ProductAdd() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const [preview, setPreview] = useState(null);
   const formik = useFormik({
     initialValues: {
@@ -28,35 +27,32 @@ function ProductAdd() {
       image: Yup.mixed().required("Product image is required"),
     }),
     onSubmit: async (values, { resetForm }) => {
-      try {
-        const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("description", values.description);
-        formData.append("price", values.price);
-        formData.append("image", values.image);
-        formData.append("token", token);
-
-        const response = await axios.post(
-          "https://reactinterviewtask.codetentaclestechnologies.in/api/api/add-product",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log("API response:", response.data);
-        toast.success("✅ Product added successfully!");
-        console.log("API response:", response.data);
-        resetForm();
-        //navigate("/products");
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error(error.response?.data?.message || "❌ Failed to add product");
-      }
+       handleAddProduct(values, resetForm);
     },
   });
+const handleAddProduct = async (values, resetForm) => {
+  try {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    formData.append("price", values.price);
+    formData.append("image", values.image);
 
+    const response = await api.post("/add-product", formData);
+    console.log("Add Product API Response:", response.data);
+
+    if (response.data?.success) {
+      toast.success(response.data?.message || "✅ Product added successfully!");
+      resetForm();
+      // navigate("/products");
+    } else {
+      toast.error(response.data?.message || "❌ Failed to add product");
+    }
+  } catch (error) {
+    console.error("Add Product Error:", error);
+    toast.error(error.response?.data?.message || "❌ Something went wrong");
+  }
+};
   return (
     <div className="w-full  p-6 bg-gray-100 border rounded-lg shadow-md">
       <ToastContainer />

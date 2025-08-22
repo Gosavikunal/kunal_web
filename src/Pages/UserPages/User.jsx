@@ -6,11 +6,10 @@ import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import { MdDeleteOutline } from "react-icons/md";
 import AccessRightCard from "../AccessRight/AccessRightCard";
-
+import api from "../../api";
 const User = () => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -25,11 +24,7 @@ const User = () => {
 
   // Fetch users with page param
   const getUsers = (page = 1) => {
-    axios
-      .get(
-        `https://reactinterviewtask.codetentaclestechnologies.in/api/api/user-list?page=${page}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+    api.get(`/user-list?page=${page}`)
       .then((res) => {
         const apiResponse = res.data;
         setPagination({
@@ -61,22 +56,23 @@ const User = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.post(
-            `https://reactinterviewtask.codetentaclestechnologies.in/api/api/user-delete/${id}`,
-            {},
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          Swal.fire("Deleted!", "User has been deleted.", "success");
-          getUsers();
+          const response = await api.post(`/user-delete/${id}`, {});
+          console.log("Delete API Response:", response.data);
+
+          if (response.data?.success) {
+            Swal.fire("Deleted!", response.data.message || "User has been deleted.", "success");
+            getUsers();
+          } else {
+            Swal.fire("Error!", response.data?.message || "Failed to delete user.", "error");
+          }
         } catch (err) {
           console.error("Delete error:", err);
-          Swal.fire("Error!", "Failed to delete user.", "error");
+          Swal.fire("Error!", "Something went wrong while deleting.", "error");
         }
       }
     });
   };
+
 
   return (
     <>
